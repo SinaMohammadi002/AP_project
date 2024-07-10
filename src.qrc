@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/Images">
+        <file>Background3.jpg</file>
+        <file>key.jpg</file>
+        <file>menuePic.png</file>
+    </qresource>
+</RCC>
