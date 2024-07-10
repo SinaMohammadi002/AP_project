@@ -159,7 +159,8 @@ private:
     Player *plyr2;
     Box bx[3][3];
     int winner; // 0 : neither, 1 : Player 1, 2 : Player 2, 3 : Tie
-    public:
+
+public:
     Game(Player *p1, Player *p2) : plyr1(p1), plyr2(p2), winner(0)
     {
         vector<int> vec = {1, 1, 1, 2, 3, 4, 4, 5, 6};
