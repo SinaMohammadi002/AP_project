@@ -23,11 +23,11 @@ MainWindow::~MainWindow()
 void MainWindow::on_signpush_clicked()
 {
     //connection
-    database = QSqlDatabase::addDatabase("QMYSQL");
+    database = QSqlDatabase::addDatabase("connection to which type");
     database.setHostName("localhost");
     database.setUserName("root");
     database.setPassword("");
-    database.setDatabaseName("file name");
+    database.setDatabaseName("file address");
 
 
 
@@ -70,6 +70,14 @@ void MainWindow::on_logpush_clicked()
     //retrieve data from fields
     QString username = ui->username->text();
     QString password = ui->password->text();
+
+    if (username == "admin" && password == "admin"){
+        QMessageBox::information (this,"success" , "Login succeed Admin");
+        MDialog Menue ;
+        Menue.setModal(true);
+        Menue.exec();
+
+    }
 
     if (db.open()){
         //creating quereis
