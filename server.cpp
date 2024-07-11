@@ -25,7 +25,7 @@ private:
     int gameRecNum;
 
 public:
-    Player(const string &u,const string &e, int hp) : username(u), email(e), hPassword(hp), gameRecNum(0) {}
+    Player(const string &u, const string &e, int hp) : username(u), email(e), hPassword(hp), gameRecNum(0) {}
     string getUser() const
     {
         return username;
@@ -64,7 +64,7 @@ protected:
 
 public:
     Question(int i, const string &q, const string &c) : id(i), questionText(q), category(c) {}
-    virtual ~Question() = 0;
+    virtual ~Question() {}
     int getId() const
     {
         return id;
@@ -100,6 +100,7 @@ protected:
 
 public:
     Multiple(int i, const string &q, const string &c, const string &a) : Question(i, q, c), answer(a) {}
+    ~Multiple() {}
     void setOption(int i, const string &o)
     {
         if (i >= 0 && i < 4)
@@ -122,6 +123,7 @@ protected:
 
 public:
     Short(int i, const string &q, const string &c, const string &a) : Question(i, q, c), answer(a) {}
+    ~Short() {}
     string getAnswer() const
     {
         return answer;
@@ -135,6 +137,7 @@ protected:
 
 public:
     Number(int i, const string &q, const string &c, int a) : Question(i, q, c), answer(a) {}
+    ~Number() {}
     int getnAnswer() const
     {
         return answer;
@@ -157,7 +160,6 @@ private:
     Player *plyr2;
     Box bx[3][3];
     int winner; // 0 : neither, 1 : Player 1, 2 : Player 2, 3 : Tie
-
 public:
     Game(Player *p1, Player *p2) : plyr1(p1), plyr2(p2), winner(0)
     {
@@ -268,6 +270,55 @@ public:
         }
         return quest;
     }
+    void displayQuestion(int p, int r, int c, unique_ptr<Question> quest)
+    {
+        system("cls");
+        cout << quest->getQuestion() << " (Category : " << quest->getCategory() << ", Type : " << bx[r][c].cType << ")" << endl;
+        string answer;
+        int nAnswer;
+        switch (bx[r][c].qType)
+        {
+        case 1:
+            for (int i = 0; i < 4; i++)
+            {
+                cout << quest->getOption(i) << " ";
+            }
+            cout << endl;
+            cin >> answer;
+            if (answer == quest->getAnswer())
+            {
+                if (p == 1)
+                    bx[r][c].component = 1;
+                if (p == 2)
+                    bx[r][c].component = 2;
+            }
+            break;
+        case 2:
+            cin >> answer;
+            if (answer == quest->getAnswer())
+            {
+                if (p == 1)
+                    bx[r][c].component = 1;
+                if (p == 2)
+                    bx[r][c].component = 2;
+            }
+            break;
+        case 3:
+            cin >> nAnswer;
+            if (nAnswer == quest->getnAnswer())
+            {
+                if (p == 1)
+                    bx[r][c].component = 1;
+                if (p == 2)
+                    bx[r][c].component = 2;
+            }
+
+            break;
+
+        default:
+            break;
+        }
+    }
     void checkGame()
     {
         for (int i = 0; i < 3; i++)
@@ -301,6 +352,22 @@ public:
             else if (bx[0][2].component == 2)
                 winner = 2;
         }
+    }
+    bool isBoardFull() const
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            for (int j = 0; j < 3; ++j)
+            {
+                if (bx[i][j].component == 0)
+                    return false;
+            }
+        }
+        return true;
+    }
+    bool isTie() const
+    {
+        return isBoardFull() && winner == 0;
     }
     void displayGame() const
     {
@@ -357,7 +424,6 @@ void signupLogin()
          << "1. Log in\n"
          << "2. Sign up\n";
 }
-
 void loggedIn(const Player &plyr)
 {
     cout << "Hey " << plyr.getUser() << endl
@@ -396,9 +462,35 @@ int main()
     cin >> choice;
     system("cls");
     Game game1(&plyr1, &plyr2);
-    game1.displayGame();
-    cin >> choice;
-
-
+    while (game1.getWinner() == 0)
+    {
+        game1.displayGame();
+        cout << "\nChoose a Box" << endl;
+        int r, c, p;
+        cin >> r >> c;
+        system("cls");
+        cout << "Who chose it btw?" << endl;
+        cin >> p;
+        game1.displayQuestion(p, r, c, game1.downloadQuestion(r, c));
+        game1.checkGame();
+        game1.isTie();
+    }
+    if (game1.getWinner() == 1)
+    {
+        cout << plyr1.getUser() << " won!\n"
+             << endl;
+        cout << "You suck " << plyr2.getUser() << endl;
+    }
+    else if (game1.getWinner() == 2)
+    {
+        cout << plyr2.getUser() << " won!\n"
+             << endl;
+        cout << "You suck, " << plyr1.getUser() << endl;
+    }
+    else if (game1.getWinner() == 3)
+    {
+        cout << "Tie :/" << endl;
+        cout << "\nYou guys are boring" << endl;
+    }
     return 0;
 }
