@@ -25,7 +25,7 @@ private:
     int gameRecNum;
 
 public:
-    Player(string u, string e, int hp) : username(u), email(e), hPassword(hp), gameRecNum(0) {}
+    Player(const string &u,const string &e, int hp) : username(u), email(e), hPassword(hp), gameRecNum(0) {}
     string getUser() const
     {
         return username;
@@ -38,7 +38,7 @@ public:
     {
         return hPassword;
     }
-    void setGameRec(int s, string o)
+    void setGameRec(int s, const string &o)
     {
         last3[gameRecNum].status = s;
         last3[gameRecNum].opponentUser = o;
@@ -65,15 +65,15 @@ protected:
 public:
     Question(int i, const string &q, const string &c) : id(i), questionText(q), category(c) {}
     virtual ~Question() = 0;
-    int getId()
+    int getId() const
     {
         return id;
     }
-    string getQuestion()
+    string getQuestion() const
     {
         return questionText;
     }
-    string getCategory()
+    string getCategory() const
     {
         return category;
     }
@@ -302,7 +302,7 @@ public:
                 winner = 2;
         }
     }
-    void displayGame()
+    void displayGame() const
     {
         for (int i = 0; i < 3; i++)
         {
