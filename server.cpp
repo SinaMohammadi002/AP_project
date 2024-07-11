@@ -1,8 +1,3 @@
-// #include <QTcpServer>
-// #include <QTcpSocket>
-// #include <QString>
-// #include <QDebug>
-// #include <QCoreApplication>
 #include <string>
 #include <cstdlib>
 #include <ctime>
@@ -10,13 +5,14 @@
 #include <iostream>
 #include <exception>
 #include <stdexcept>
+#include <memory>
 
 using namespace std;
 
 typedef struct gameRecord
 {
-    int status; // 0 : D, 1 : W, 2 : L
-    string opponentUser;
+    int status = 0; // 0 : D, 1 : W, 2 : L
+    string opponentUser = "No one";
 } gameRecord;
 
 class Player
@@ -24,21 +20,21 @@ class Player
 private:
     string username;
     string email;
-    string hPassword;
+    int hPassword; // Hashed Password
     gameRecord last3[3];
     int gameRecNum;
 
 public:
-    Player(string u, string e, string hp) : username(u), email(e), hPassword(hp), gameRecNum(0) {}
-    string getUser()
+    Player(string u, string e, int hp) : username(u), email(e), hPassword(hp), gameRecNum(0) {}
+    string getUser() const
     {
         return username;
     }
-    string getEmail()
+    string getEmail() const
     {
         return email;
     }
-    string getHPass()
+    int getHPass() const
     {
         return hPassword;
     }
@@ -49,11 +45,11 @@ public:
         gameRecNum++;
         gameRecNum %= 3;
     }
-    gameRecord getLast(int i)
+    gameRecord getLast(int i) const
     {
         return last3[i % 3];
     }
-    int getGameRecNum()
+    int getGameRecNum() const
     {
         return gameRecNum;
     }
@@ -67,7 +63,8 @@ protected:
     string category;
 
 public:
-    Question(int i, string q, string c) : id(i), questionText(q), category(c) {}
+    Question(int i, const string &q, const string &c) : id(i), questionText(q), category(c) {}
+    virtual ~Question() = 0;
     int getId()
     {
         return id;
@@ -80,16 +77,16 @@ public:
     {
         return category;
     }
-    virtual void setOption(int, string) {};
-    virtual string getOption(int)
+    virtual void setOption(int, const string &) {}
+    virtual string getOption(int) const
     {
         return "";
     }
-    virtual string getAnswer()
+    virtual string getAnswer() const
     {
         return "";
     }
-    virtual int getnAnswer()
+    virtual int getnAnswer() const
     {
         return 0;
     }
@@ -102,16 +99,17 @@ protected:
     string answer;
 
 public:
-    Multiple(int i, string q, string c, string a) : Question(i, q, c), answer(a) {}
-    void setOption(int i, string o)
+    Multiple(int i, const string &q, const string &c, const string &a) : Question(i, q, c), answer(a) {}
+    void setOption(int i, const string &o)
     {
-        option[i] = o;
+        if (i >= 0 && i < 4)
+            option[i] = o;
     }
-    string getOption(int i)
+    string getOption(int i) const
     {
-        return option[i];
+        return (i >= 0 && i < 4) ? option[i] : "";
     }
-    string getAnswer()
+    string getAnswer() const
     {
         return answer;
     }
@@ -123,8 +121,8 @@ protected:
     string answer;
 
 public:
-    Short(int i, string q, string c, string a) : Question(i, q, c), answer(a) {}
-    string getAnswer()
+    Short(int i, const string &q, const string &c, const string &a) : Question(i, q, c), answer(a) {}
+    string getAnswer() const
     {
         return answer;
     }
@@ -136,8 +134,8 @@ protected:
     int answer;
 
 public:
-    Number(int i, string q, string c, int a) : Question(i, q, c), answer(a) {}
-    int getnAnswer()
+    Number(int i, const string &q, const string &c, int a) : Question(i, q, c), answer(a) {}
+    int getnAnswer() const
     {
         return answer;
     }
@@ -145,7 +143,7 @@ public:
 
 typedef struct Box
 {
-    int component; // 0 : - , 1 : X, 2 : O, 3 : ...
+    int component; // 0 : -, 1 : X, 2 : O, 3 : ...
     int cType;     // 1 : Normal, 2 : Bomb, 3 : Treasure
     int qType;     // 1 : Multiple, 2 : Short, 3 : Number
     int row;
@@ -206,7 +204,7 @@ public:
             }
         }
     }
-    Question &downloadQuestion(int i, int j)
+    unique_ptr<Question> downloadQuestion(int i, int j)
     {
         int id;
         string questionText;
@@ -228,49 +226,112 @@ public:
         }
         cout << "id : " << endl;
         cin >> id;
+        cin.ignore();
         cout << "questionText : " << endl;
-        cin >> questionText;
+        getline(cin, questionText);
         cout << "category : " << endl;
-        cin >> category;
-        Question *quest;
+        getline(cin, category);
+        unique_ptr<Question> quest;
         if (type == "multiple")
         {
             string option[4];
             string answer;
             cout << "option 1 : " << endl;
-            cin >> option[0];
+            getline(cin, option[0]);
             cout << "option 2 : " << endl;
-            cin >> option[1];
+            getline(cin, option[1]);
             cout << "option 3 : " << endl;
-            cin >> option[2];
+            getline(cin, option[2]);
             cout << "option 4 : " << endl;
-            cin >> option[3];
+            getline(cin, option[3]);
             cout << "answer : " << endl;
-            cin >> answer;
-            quest = new Multiple(id, questionText, category, answer);
-            quest->setOption(0, option[0]);
-            quest->setOption(1, option[1]);
-            quest->setOption(2, option[2]);
-            quest->setOption(3, option[3]);
+            getline(cin, answer);
+            quest = make_unique<Multiple>(id, questionText, category, answer);
+            static_cast<Multiple *>(quest.get())->setOption(0, option[0]);
+            static_cast<Multiple *>(quest.get())->setOption(1, option[1]);
+            static_cast<Multiple *>(quest.get())->setOption(2, option[2]);
+            static_cast<Multiple *>(quest.get())->setOption(3, option[3]);
         }
         else if (type == "short")
         {
             string answer;
             cout << "answer : " << endl;
-            cin >> answer;
-            quest = new Short(id, questionText, category, answer);
+            getline(cin, answer);
+            quest = make_unique<Short>(id, questionText, category, answer);
         }
         else if (type == "number")
         {
             int answer;
             cout << "answer : " << endl;
             cin >> answer;
-            quest = new Number(id, questionText, category, answer);
+            quest = make_unique<Number>(id, questionText, category, answer);
         }
-        return *quest;
+        return quest;
     }
+    void checkGame()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (bx[i][0].component == bx[i][1].component && bx[i][1].component == bx[i][2].component)
+            {
+                if (bx[i][0].component == 1)
+                    winner = 1;
+                else if (bx[i][0].component == 2)
+                    winner = 2;
+            }
+            if (bx[0][i].component == bx[1][i].component && bx[1][i].component == bx[2][i].component)
+            {
+                if (bx[0][i].component == 1)
+                    winner = 1;
+                else if (bx[0][i].component == 2)
+                    winner = 2;
+            }
+        }
+        if (bx[0][0].component == bx[1][1].component && bx[1][1].component == bx[2][2].component)
+        {
+            if (bx[0][0].component == 1)
+                winner = 1;
+            else if (bx[0][0].component == 2)
+                winner = 2;
+        }
+        if (bx[0][2].component == bx[1][1].component && bx[1][1].component == bx[2][0].component)
+        {
+            if (bx[0][2].component == 1)
+                winner = 1;
+            else if (bx[0][2].component == 2)
+                winner = 2;
+        }
+    }
+    void displayGame()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                cout << " ";
+                switch (bx[i][j].component)
+                {
+                case 0:
+                    cout << "-";
+                    break;
+                case 1:
+                    cout << "X";
+                    break;
+                case 2:
+                    cout << "O";
+                    break;
+                case 3:
+                    cout << ".";
+                    break;
 
-    int getWinner()
+                default:
+                    break;
+                }
+            }
+            cout << endl;
+        }
+    }
+    int getWinner() const
     {
         return winner;
     }
@@ -280,8 +341,64 @@ public:
     }
 };
 
+unsigned int hashPassword(const string &password)
+{
+    unsigned int hashedPass = 0;
+    for (char c : password)
+    {
+        hashedPass = hashedPass * 31 + static_cast<unsigned int>(c);
+    }
+    return hashedPass;
+}
+
+void signupLogin()
+{
+    cout << "Player 1\n\n"
+         << "1. Log in\n"
+         << "2. Sign up\n";
+}
+
+void loggedIn(const Player &plyr)
+{
+    cout << "Hey " << plyr.getUser() << endl
+         << endl;
+    cout << "Last 3 Matches : " << endl;
+    for (int i = 2; i >= 0; i--)
+    {
+        switch (plyr.getLast(plyr.getGameRecNum() + i).status)
+        {
+        case 0:
+            cout << "D " << plyr.getLast(plyr.getGameRecNum() + i).opponentUser << endl;
+            break;
+        case 1:
+            cout << "W " << plyr.getLast(plyr.getGameRecNum() + i).opponentUser << endl;
+            break;
+        case 2:
+            cout << "L " << plyr.getLast(plyr.getGameRecNum() + i).opponentUser << endl;
+            break;
+        default:
+            break;
+        }
+    }
+    cout << "\nPress 1 to if you're ready!\n";
+}
+
 int main()
 {
     srand(static_cast<unsigned int>(time(0)));
+    Player plyr1("me", "me@gmail.com", 1234);
+    Player plyr2("you", "you@gmail.com", 5432);
+    int choice;
+    signupLogin();
+    cin >> choice;
+    system("cls");
+    loggedIn(plyr1);
+    cin >> choice;
+    system("cls");
+    Game game1(&plyr1, &plyr2);
+    game1.displayGame();
+    cin >> choice;
+
+
     return 0;
 }
