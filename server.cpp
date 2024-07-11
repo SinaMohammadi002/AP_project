@@ -160,6 +160,7 @@ private:
     Player *plyr2;
     Box bx[3][3];
     int winner; // 0 : neither, 1 : Player 1, 2 : Player 2, 3 : Tie
+
 public:
     Game(Player *p1, Player *p2) : plyr1(p1), plyr2(p2), winner(0)
     {
@@ -272,6 +273,14 @@ public:
     }
     void displayQuestion(int p, int r, int c, unique_ptr<Question> quest)
     {
+        if (bx[r][c].component != 0)
+        {
+            int temp;
+            std::cout << "Sorry, this box is already taken.\n";
+            cin >> temp;
+            system("cls");
+            return;
+        }
         system("cls");
         cout << quest->getQuestion() << " (Category : " << quest->getCategory() << ", Type : " << bx[r][c].cType << ")" << endl;
         string answer;
@@ -424,6 +433,7 @@ void signupLogin()
          << "1. Log in\n"
          << "2. Sign up\n";
 }
+
 void loggedIn(const Player &plyr)
 {
     cout << "Hey " << plyr.getUser() << endl
