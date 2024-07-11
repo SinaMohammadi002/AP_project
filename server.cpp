@@ -300,6 +300,23 @@ public:
                     bx[r][c].component = 1;
                 if (p == 2)
                     bx[r][c].component = 2;
+                if (bx[r][c].cType == 3)
+                {
+                    if (p == 1)
+                        winner = 1;
+                    if (p == 2)
+                        winner = 2;
+                }
+            }
+            else
+            {
+                if (bx[r][c].cType == 2)
+                {
+                    if (p == 1)
+                        winner = 2;
+                    if (p == 2)
+                        winner = 1;
+                }
             }
             break;
         case 2:
@@ -310,6 +327,16 @@ public:
                     bx[r][c].component = 1;
                 if (p == 2)
                     bx[r][c].component = 2;
+            }
+            else
+            {
+                if (bx[r][c].cType == 2)
+                {
+                    if (p == 1)
+                        winner = 2;
+                    if (p == 2)
+                        winner = 1;
+                }
             }
             break;
         case 3:
@@ -462,8 +489,8 @@ void loggedIn(const Player &plyr)
 int main()
 {
     srand(static_cast<unsigned int>(time(0)));
-    Player plyr1("me", "me@gmail.com", 1234);
-    Player plyr2("you", "you@gmail.com", 5432);
+    Player plyr1("sina", "sina@gmail.com", 1234);
+    Player plyr2("reza", "reza@gmail.com", 5432);
     int choice;
     signupLogin();
     cin >> choice;
@@ -502,5 +529,6 @@ int main()
         cout << "Tie :/" << endl;
         cout << "\nYou guys are boring" << endl;
     }
+    cin >> choice;
     return 0;
 }
