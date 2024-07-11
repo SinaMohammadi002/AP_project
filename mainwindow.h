@@ -18,8 +18,24 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    QSqlDatabase database ;
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void connClose (){
+        database.close ();
+        database.removeDatabase(QSqlDatabase::defaultConnection);
+    }
+    bool connOpen(){
+        database =QSqlDatabase::addDatabase("connection type");
+        database.setDatabaseName("address of database");
+
+        if (!database.open ()){
+            return false ;
+        }
+        else {
+            return true ;
+        }
+    }
 
 private slots:
     void on_signpush_clicked();
@@ -28,6 +44,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QSqlDatabase database ;
+    //QSqlDatabase database ;
 };
 #endif // MAINWINDOW_H
