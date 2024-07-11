@@ -160,8 +160,7 @@ private:
     Player *plyr2;
     Box bx[3][3];
     int winner; // 0 : neither, 1 : Player 1, 2 : Player 2, 3 : Tie
-
-public:
+    public:
     Game(Player *p1, Player *p2) : plyr1(p1), plyr2(p2), winner(0)
     {
         vector<int> vec = {1, 1, 1, 2, 3, 4, 4, 5, 6};
@@ -443,7 +442,6 @@ public:
         winner = w % 4;
     }
 };
-
 unsigned int hashPassword(const string &password)
 {
     unsigned int hashedPass = 0;
@@ -496,6 +494,12 @@ int main()
     cin >> choice;
     system("cls");
     loggedIn(plyr1);
+    cin >> choice;
+    system("cls");
+    signupLogin();
+    cin >> choice;
+    system("cls");
+    loggedIn(plyr2);
     cin >> choice;
     system("cls");
     Game game1(&plyr1, &plyr2);
